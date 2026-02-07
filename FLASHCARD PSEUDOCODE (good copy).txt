@@ -1,0 +1,3265 @@
+// CONSTANTS
+CONST: goBack, YES, NO, ascii_lowercase, ascii_uppercase	
+
+goBack <-- ["go back", "back", "Back", "Go Back", "Go back"]
+
+YES <-- ['y','Yes','Y','yes']
+
+NO <-- ['n'or'N'or'No'or'no']
+
+ascii_lowercase <-- ('abcdefghijklmnopqrstuvwxyz')
+
+ascii_uppercase <-- (‘ABCDEFGHIJKLMNOPQRSTUVWXYZ’)
+
+
+// makes user INPUT correct value 
+
+DEFINE FUNCTION yOrN(userInput):
+
+    WHILE True:
+
+        	IF userInput IN YES OR userInput IN NO THEN:
+
+           	BREAK OUT OF LOOP
+
+       	OTHERWISE:
+	
+		OUTPUT("Please INPUT a correct value, y OR n \n>")
+
+            	INPUT(userInput)
+
+            	SKIP TO NEXT ITERATION 
+
+
+END FUNCTION yOrN
+
+
+
+// function used to go back to the start of another function
+
+DEFINE FUNCTION toStartOfFunction(function, functionInfo): 
+
+    	CALL function(*functionInfo) // needs to have all function information backed into a tuple
+
+END FUNCTION toStartOfFunction
+
+
+
+// removes what is within brackets IN a string 
+
+DEFINE FUNCTION removeBrackets(test_str):
+
+	// define varaibles
+
+    	ret <-- ''
+
+    	skip1c <-- 0
+
+    	skip2c <-- 0
+
+    	skip3c <-- 0
+
+    	// takes characters from INPUT
+
+	FOR i IN test_str:
+
+      		// determines amount of start brackets and adds one FOR every start bracket
+		CASE:
+
+        			i = '[':
+	
+      	      			skip1c <-- skip1c + 1
+
+        			i = '(':
+	
+      	      			skip2c <-- skip2c + 1
+
+        			i = '{':
+
+            			skip3c <-- skip3c + 1
+
+        			// determines amount of end brackets, and removes one FOR every end bracket
+
+        			i = ']' and skip1c > 0:
+
+            			skip1c <-- skip1c - 1
+	
+        			i = ')' and skip2c > 0:
+
+           		 		skip2c <-- skip2c - 1
+
+        			i = '}' and skip3c > 0:
+
+            			skip3c <-- skip3c - 1
+
+        			// once all brackets are closed, removes what is within the bracket
+
+        			skip1c = 0 and skip2c = 0 and skip3c = 0:
+
+            			ret <-- ret + i
+		END CASE
+	
+	END FOR
+    	// RETURNs final string, with all information within bracket removed 
+
+    	RETURN ret
+
+END FUNCTION removeBrackets
+
+
+
+// removes what is within brackets IN a string, removes notImportant information, converts string to lowercase
+
+DEFINE FUNCTION checkNotImportant(Input):
+
+	// not important characters 
+
+    	notImportant <-- {',': '','.': '','"': '',"'": '','!': '','?': '','=': '','+': '','_': '','-': '','*': '','$': '','#': '','@': '','%': '','^': '','~': '','`': '','/': '',';': '',':': '','<': '','>': '','(': '',')': '','[': '',']': '','{': '','}': ''}
+
+    	// determines IF INPUT is IN a list OR not 
+
+    	whatIsWhat <-- TYPEOFDATA(Input)
+
+    	IF whatIsWhat != list THEN:
+
+        		Input <-- [Input]
+	END IF
+
+    	// check used to determine IF any notImportant characters are IN Input
+
+    	check <-- []
+
+    	check <-- check + Input
+
+    	checkSplit <-- []
+
+    	counter <-- -1
+
+    	// check is split into list, containing individual characters 
+
+    	WHILE True:
+
+      		counter <-- counter + 1
+
+        		IF counter = check.LENGTH THEN:
+
+            		BREAK OUT OF LOOP
+
+		END IF
+
+        		FOR letter IN str(check[counter]):
+
+            		checkSplit.append(letter)
+		END FOR
+	END WHILE
+
+
+    	// new INPUT that will be RETURNed 
+
+    	newInput <-- []
+
+    	counter <-- -1
+
+    	// splits the list up with Â¶ seperating each list element
+
+    	WHILE True:
+
+        		counter <-- counter + 1
+
+    		IF counter = Input.LENGTH THEN:
+
+            		BREAK OUT OF LOOP
+
+		END IF
+
+        		FOR letter IN str(Input[counter]):
+
+            		newInput.append(letter)
+		END FOR
+
+        		newInput.append("Â¶")
+
+	END WHILE
+
+
+    	// joins list into one string
+
+    	newInput <-- ''.join(newInput)
+
+    
+
+    	// removes any brackets with information inside 
+
+    	newInput <-- removeBrackets(newInput)
+
+    
+
+    	// removes all not important information
+
+    	FOR key, value IN notImportant.items():
+
+        		newInput <-- newInput.replace(key, value)
+
+	END FOR
+
+    
+
+
+    	// converts list back into list containing individual characters 
+
+    	newInput <-- list(newInput)
+
+    
+
+    	// makes string characters into lowercase 
+
+    	FOR words IN range(newInput.LENGTH):
+
+        		newInput[words] <-- newInput[words].LOWER()	//.LOWER turns all case string into lowercase
+	
+	END FOR        
+
+
+
+    	// makes list into one whole string
+
+    	newInput <-- ''.join(newInput) //''.JOIN() joins list or string or any data type into a string having it seperated with no space because nothing in ''
+
+
+
+    	// seperates string into list by Â¶, into original arrangement
+
+    	newInput <-- list(newInput.split("Â¶"))
+
+
+
+    	// removes last empty string from list
+
+    	DELETE newInput[-1] // DELETE deletes the last element in list
+
+
+
+    	// remove all extra spaces 
+
+    	counter <-- 0
+
+    	WHILE counter < newInput.LENGTH:
+
+        		IF newInput is blanks OR contains only spaces THEN:
+
+            		counter <-- counter + 1
+
+        		OTHERWISE:
+
+            		newInput[counter] <-- ' '.join(newInput[counter].split())
+
+            		counter <-- counter + 1
+		
+		END IF
+
+	END WHILE
+
+    	// IF originaly a user INPUT, needs to be converted back into a string to be checked against a list, i will no this IF original INPUT was not a list
+
+    	IF whatIsWhat != list THEN:
+
+        		newInput <-- ''.join(newInput)
+
+	END IF    
+
+    	// RETURNs the new INPUT 
+
+    	RETURN newInput
+
+END FUNCTION notImportant
+
+
+
+// determines IF INPUT is a number OR word, IF word converts to number only IF an actual number word, otherwise RETURNs -1
+
+DEFINE FUNCTION checkIsDigit(Input): 
+
+    	IF Input is a number THEN:
+
+        		// IF number
+
+        		RETURN InpuT
+
+
+
+    	OTHERWISE:
+
+        		// IF string converts string to number
+
+        		RETURN text2int(Input)
+
+END FUNCTION checkIsDigit
+
+
+
+// converts string to numbers
+
+DEFINE FUNCTION text2int(textNum,numWords={}): 
+
+    	IF not numWords THEN:
+
+        		// unit words
+
+        		units <-- [
+
+        		"zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+
+        		"nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+
+        		"sixteen", "seventeen", "eighteen", "nineteen",
+
+        		]
+
+
+
+        		// tenths words
+
+        		tens <-- ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+
+
+
+        		// scale words, meaning how much it is 
+
+        		scales <-- ["hundred", "thousand", "million", "billion", "trillion"]
+
+
+
+        		// last numbers
+
+        		numWords["and"] <-- (1, 0)
+
+        		FOR idx, word IN enumerate(units):    numWords[word] <-- (1, idx)
+
+		END FOR
+
+        		FOR idx, word IN enumerate(tens):     numWords[word] <-- (1, idx * 10)
+
+		END FOR
+
+        		FOR idx, word IN enumerate(scales):   numWords[word] <-- (10 ** (idx * 3 OR 2), 0)
+
+		END FOR
+
+	END IF
+
+
+    	current <-- result <-- 0
+
+    	FOR word IN textNum.split():
+
+        		// IF word is not a number RETURN -1
+
+        		IF word not IN numWords THEN:
+
+            		RETURN -1
+			
+		END IF
+
+	
+        		// determines scale, actual number 
+	
+        		scale, increment <-- numWords[word]
+
+        		current <-- current * scale + increment
+
+        		IF scale > 100 THEN:
+
+           	 	result <-- result + current
+
+            		current <-- 0
+		
+		END IF
+	
+	END FOR
+
+
+
+    	// RETURN number 
+
+    	RETURN result + current
+
+END FUNCTION text2int
+
+
+
+// stop watch, to time how long it takes
+
+DEFINE FUNCTION timeConvert(sec):
+
+    	mins <-- sec // 60
+
+    	sec <-- sec % 60
+
+    	hours <-- mins // 60
+
+    	mins <-- mins % 60
+
+    	OUTPUT("Your time was, {0}:{1}:{2}".format(hours, mins, sec) + " to match all your flashcards (in formate of Hours:Minutes:Seconds)\n")  
+
+END FUNCTION timeConvert  
+
+
+
+// OUTPUTs list FOR flashcards to match up
+
+DEFINE FUNCTION OUTPUTMatchOptions(answerKeyChecker, listLeftColumnLetters, shuffledList1, listRightColumnLetters, shuffledList2):
+
+    	counter <-- -1
+
+    	WHILE True:
+
+        		counter <-- counter + 1
+
+        		IF counter >= answerKeyChecker.LENGTH THEN:
+
+            		BREAK OUT OF LOOP
+
+		END IF
+
+        		OUTPUT(listLeftColumnLetters[counter] + ". " + shuffledList1[counter] + "          " + listRightColumnLetters[counter] + ". " + shuffledList2[counter])
+
+	END WHILE
+
+END FUNCTION OUTPUTMatchOptions
+
+
+// start of program
+
+DEFINE FUNCTION start():
+
+    	WHILE True:
+
+        		// find IF creating subject OR accessing subject
+
+		OUTPUT("\n1. View subjects, \n2. Create New Subject, \n3. Create new flashcard set OR \n4. Add flashcards to existing set \n>")
+
+        		INPUT(SubjectChoice)
+
+        		CASE:
+
+			// IF INPUT below go to readsubject
+
+        			SubjectChoice = "view subjects" OR SubjectChoice = "subject" OR SubjectChoice = "Subject" OR SubjectChoice = "Subjects" OR SubjectChoice = "subjects" OR SubjectChoice = "view" OR SubjectChoice = "View" OR SubjectChoice = "View subject" OR SubjectChoice = '1' OR SubjectChoice = '1.' THEN:
+
+            			CALL readSubject()
+
+        
+
+        			// IF INPUT below go to 
+
+        			SubjectChoice = "create new subject" OR SubjectChoice = "Create New Subject" OR SubjectChoice = "create" OR SubjectChoice = "Create" OR SubjectChoice = "New" OR SubjectChoice = "new" OR SubjectChoice = '2' OR SubjectChoice = '2.':
+
+            			CALL createNewSubject()
+
+
+
+        			// IF user wants to add new flashcard set to existing subjects
+
+        			SubjectChoice = 'Create new flashcard set' OR SubjectChoice = 'new flashcard' OR SubjectChoice = "New flashcard" OR SubjectChoice = 'create new flashcard set' OR SubjectChoice = 'set' OR SubjectChoice = 'Set' OR SubjectChoice = '3' OR SubjectChoice = '3.':
+
+            			CALL addFlashcardSet()
+
+
+
+        			// IF user wants to add flashcards to existing sets 
+
+        			SubjectChoice = 'Add flashcards' OR SubjectChoice = 'add flashcards' OR SubjectChoice = 'add flashcard' OR SubjectChoice = 'Add flashcard' OR SubjectChoice = '4' OR SubjectChoice = '4.':
+
+            			CALL addFlashcard()
+
+
+
+        			OTHERWISE:
+
+            			OUTPUT('Please INPUT a correct value')
+
+END FUNCTION start
+
+
+
+DEFINE FUNCTION readSubject():
+
+    	WHILE True:
+
+        	with open('subjects.txt') as readingSubject:
+
+
+
+            	// converts subject file into string by reading it 
+
+            	readSubjects <-- readingSubject.read()
+
+
+
+            	// converts subject file into list 
+
+            	subjectList <-- readSubjects.split('\n')
+
+
+
+            	// OUTPUTs options of subjects user selects subject
+
+		OUTPUT("\nSelect subject below OR go back: \n" + readSubjects + '>')
+
+            	INPUT(userChosenSubject)
+
+            
+
+		CASE:
+
+            		userChosenSubject IN goBack:
+
+                			// goes to start
+
+                			readingSubject.close()
+
+                			CALL start()
+
+                    
+
+            		// IF INPUT is equal to option IN subject list then go to flashcardSet             
+
+            		userChosenSubject IN subjectList:
+
+                			readingSubject.close()
+
+                			CALL getFlashcards(userChosenSubject)
+
+                    
+
+            		// IF INPUT not IN subject list then repeat loop
+
+            		OTHERWISE:
+
+               			OUTPUT("Please INPUT a correct value")
+
+                			readingSubject.close()
+		END CASE
+
+END FUNCTION readSubject
+
+
+DEFINE FUNCTION createNewSubject():                 
+
+	// user choosen to create new subject       
+
+        	WHILE True:
+
+		OUTPUT("Input the name of your subject, please INPUT \n correctly as this can not be changed later \n OR go back:\n>")
+
+          	INPUT(userNewSubjectName)
+
+            	// IF entered back, goes to start
+
+            	IF userNewSubjectName IN goBack THEN:
+
+                		CALL start()
+
+            	// entered anything else, continues making new flashcard set
+
+            	OTHERWISE:
+
+                		// writes user created subject name into subject file to be accessed later 
+
+                		with open('subjects.txt','a') as subjectsFile:
+
+                    			subjectsFile.write(userNewSubjectName + '\n')
+
+                    			subjectsFile.close()
+
+                		CALL createFlashcard(userNewSubjectName)
+			
+		END IF
+
+	END WHILE
+
+END FUNCTION createNewSubject
+
+
+
+DEFINE FUNCTION createFlashcard(userNewSubjectName):
+
+    	WHILE True:
+		
+		OUTPUT("Input the name of your flashcard set, \nplease INPUT correctly as this can not be changed later \n OR go back: \n>")
+		
+        		INPUT(userNewFlashcardName)
+
+        		// IF entered back, goes to start
+
+        		IF userNewFlashcardName IN goBack THEN:
+
+   			CALL createNewSubject()      
+
+        		// entered anything else uses that value as the name of the flashcard set
+
+        		OTHERWISE:
+
+            
+
+            		// creates the new subject, and writes the name of flashcard set IN the file
+
+            		with open(userNewSubjectName + ".txt","a") as newSubjectFile:
+
+                			newSubjectFile.write(userNewFlashcardName + "\n")
+	
+                			newSubjectFile.close()
+
+
+
+            		// continues looping to create new flashcards 
+
+            		WHILE True:
+
+                			// user enters flashcard terms and definitions
+				
+				OUTPUT('Enter the term of this flashcard\n>')
+
+                			INPUT(userNewTerm)
+
+				OUTPUT'Input the definition of that term\n>')
+
+                			INPUT(userNewDef)
+
+                        
+
+               		 	// creating flashcard terms and definitions FOR that set
+
+                			with open(userNewFlashcardName + 'Term.txt','a') as newTermFile:
+
+                    			newTermFile.write(userNewTerm + '\n')
+
+                    			newTermFile.close()
+
+
+
+                			with open(userNewFlashcardName + 'Def.txt','a') as newDefFile:
+
+                    			newDefFile.write(userNewDef + '\n')
+
+                    			newDefFile.close()
+
+
+
+                    			// determines IF you make another flashcard
+
+					OUTPUT('\nDo you want to add another flashcard, y OR n:\n>')
+
+                    			INPUT(continueEnteringFlashcards)
+
+                    			CALL yOrN(continueEnteringFlashcards)
+
+                    			IF continueEnteringFlashcards IN NO:
+
+                        				// determines IF you make another flashcard set 
+
+						OUTPUT('\nDo you wish to REPEAT making another flashcard set, y OR n \n>')
+
+                        				INPUT(continueFlashcard)
+
+                        				CALL yOrN(continueFlashcard)
+
+                        				IF continueFlashcard IN YES THEN:
+
+                            				// makes another flashcard set
+
+                            				BREAK OUT OF LOOP
+
+                        				OTHERWISE:
+
+                            				CALL start()
+	
+						END IF
+
+					END IF 
+			END WHILE 
+		
+		END IF
+
+	END WHILE
+
+END FUNCTION createFlashcard
+
+
+
+// create another flashcard set IN a existing subject
+
+DEFINE FUNCTION addFlashcardSet():
+
+    	WHILE True:
+
+        		with open('subjects.txt') as readingSubject:
+
+
+            		// converts subject file into string by reading it 
+
+            		readSubjects <-- readingSubject.read()
+
+
+
+            		// converts subject file into list 
+
+            		subjectList <-- readSubjects.split('\n')
+
+
+
+           		// OUTPUTs options of subjects user selects subject
+
+			OUTPUT("\nSelect subject below OR go back: \n" + readSubjects + '>')
+
+           		INPUT(userChosenSubject)
+
+            
+
+			CASE:
+
+            			userChosenSubject IN goBack:
+
+                				// goes to start
+
+                				readingSubject.close()
+
+               				CALL start()        
+          
+
+         				// IF INPUT is equal to option IN subject list then go to flashcardSet             
+
+            			userChosenSubject IN subjectList:
+
+                				readingSubject.close()
+
+                				createFlashcard(userChosenSubject)
+
+          
+           			 // IF INPUT not IN subject list then repeat loop
+
+            			OTHERWISE:
+
+               				OUTPUT("Please INPUT a correct value")
+
+                				readingSubject.close()
+			END CASE
+
+	END WHILE
+
+END FUNCTION addFlashcardSet
+
+
+
+DEFINE FUNCTION addFlashcard():
+
+   	 WHILE True:
+
+        		with open('subjects.txt') as readingSubject:
+
+
+
+           		// converts subject file into a string by reading it 
+
+            		readSubjects <-- readingSubject.read()
+
+
+
+            		// converts subject file into list 
+
+            		subjectList <-- readSubjects.split('\n')
+
+
+
+            		// OUTPUTs options of subjects user selects subject
+
+			OUTPUT("\nSelect subject below OR go back: \n" + readSubjects + '>')
+
+            		INPUT(userChosenSubject)
+
+            		
+			CASE:
+
+            			userChosenSubject IN goBack:
+
+                				// goes to start
+
+                				readingSubject.close()
+
+                				CALL start()
+                    
+
+            			// IF INPUT is equal to option IN subject list then go to flashcardSet             
+
+            			userChosenSubject IN subjectList:
+
+                				readingSubject.close()
+
+                				with open(userChosenSubject + '.txt') as flashcardSets:
+
+                    				// converts flashcardset file into a string by reading it 
+
+                    				readFlashcardSets <-- flashcardSets.read()
+
+
+                    				// converts flashcard set file into list 
+
+                    				flashcardList <-- readFlashcardSets.split('\n')
+
+                    				// removes last value, because its blank
+
+                    				DELETE flashcardList[-1]
+
+
+
+                    				// asks user what flashcard set they would like to add flashcards to
+
+						OUTPUT('\nPlease select your flashcard sets below \nor go back: \n' + readFlashcardSets + ">")
+
+                    				INPUT(userChosenFlashcardSet)
+
+						CASE:
+	
+                    					userChosenFlashcardSet IN goBack:
+
+                        						flashcardSets.close()
+
+                       						CALL start()
+
+             
+
+                    					// IF user INPUT is IN the list of flashcard sets REPEAT below
+
+                    					userChosenFlashcardSet IN flashcardList:
+
+                        						flashcardSets.close()
+
+
+
+                        						// continues looping to create new flashcards 
+
+                       						WHILE True:
+
+                        							// user enters flashcard term and definitions
+
+									OUTPUT('Enter the term of this flashcard\n>')
+
+                            						INPUT(userNewTerm)
+
+									OUTPUT('Input the definition of that term\n>')
+
+                            						INPUT(userNewDef)
+
+                        
+
+                            						// opens flashcard term set and adds term 
+
+                            						with open(userChosenFlashcardSet + 'Term.txt','a') as newTermFile:
+
+                                							newTermFile.write(userNewTerm + '\n')
+
+                                							newTermFile.close()
+
+                            						// open flachard DEFINE FUNCTION set and adds definition
+
+                            						with open(userChosenFlashcardSet + 'Def.txt','a') as newDefFile:
+
+                                							newDefFile.write(userNewDef + '\n')
+
+                                							newDefFile.close()
+
+
+
+                                							// determines IF you make another flashcard
+
+										OUTPUT('\nDo you want to add another flashcard, y OR n:\n>')
+
+                                							INPUT(continueEnteringFlashcards)
+
+                                							CALL yOrN(continueEnteringFlashcards)
+				
+										IF continueEnteringFlashcards IN NO THEN:
+                                               						
+                                    							// determines IF you make another flashcard set 
+											
+											OUTPUT('\nDo you wish to REPEAT making another flashcard set, y OR n \n>')
+
+                                    							INPUT(continueFlashcard)
+
+                                    							CALL yOrN(continueFlashcard)
+
+                                    							IF continueFlashcard IN YES THEN:
+
+                                        								// makes another flashcard set
+
+                                        								CALL createFlashcard(userChosenSubject)
+
+
+
+                                   								OTHERWISE:
+
+                                       								CALL start()
+										
+											END IF
+
+										END IF
+				
+								END WHILE
+
+
+
+                    					// IF INPUT not IN subject list then repeat loop till they enter a correct value 
+
+                   					OTHERWISE:
+
+                        						OUTPUT("Please INPUT a correct value")
+
+                        						readingSubject.close()
+
+						END CASE
+
+			END CASE
+
+	END WHILE	
+                 
+END FUNCTION addFlashcard
+
+
+
+DEFINE FUNCTION getFlashcards(userChosenSubject):
+
+ 	with open(userChosenSubject + '.txt') as flashcardSets:
+
+        		// converts flashcardset file into a string by reading it 
+
+        		readFlashcardSets <-- flashcardSets.read()
+
+
+
+        		// converts flashcard set file into list 
+
+        		flashcardList <-- readFlashcardSets.split('\n')
+
+        		// removes last value, because its blank
+
+        		DELETE flashcardList[-1]
+
+
+
+        		// asks user what flashcard set they would like to study
+
+		OUTPUT('\nPlease select your flashcard sets \nbelow you would like to study OR go back:\n' + readFlashcardSets + ">")
+
+        		INPUT(userChosenFlashcardSet)
+
+		CASE:
+
+       	 		userChosenFlashcardSet IN goBack:
+
+            			flashcardSets.close()
+
+            			readSubject()
+
+             
+
+        			userChosenFlashcardSet IN flashcardList:
+
+            			flashcardSets.close()
+
+            			// coverts flashcard term file into a list
+
+            			with open(userChosenFlashcardSet + "Term.txt") as Terms:
+
+               				// makes term file as string
+
+                				termRead <-- Terms.read()
+
+                				// makes term a string (^) as list
+
+                				termsTotalList <-- termRead.split("\n") // turns string into list, by seperating each element by every entered line
+
+
+                				// removes empty line IN list
+
+                				DELETE termsTotalList[-1]
+
+                				// closes file
+
+                				Terms.close()
+
+        
+
+            			// converts flashcard DEFINE FUNCTION file into a list
+
+            			with open(userChosenFlashcardSet + "Def.txt") as Def:
+
+                 				// makes DEFINE FUNCTION file as string
+
+                				defRead <-- Def.read()
+
+                				// make DEFINE FUNCTION a string (^) as list
+
+                				defsTotalList <-- defRead.split("\n") // turns string into list, by seperating each element by every entered line
+
+                				// removes empty line IN list
+
+                				DELETE defsTotalList[-1]
+
+                				// closes file
+
+                				Def.close()
+
+
+
+            			CALL StudyChoice(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList)  
+
+		END CASE     
+
+END FUNCTION getFlashcards 
+
+          
+
+DEFINE FUNCTION StudyChoice(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList)
+
+  	WHILE True:
+		
+		OUTPUT("\nHow would you like to study:\n1. Flashcards \n2. Fill IN the blanks \n3. Do a test \n4. Create notes, FOR this flashcard set IN alphabetical order \n5. Match flashcards \n6. Multichoice \n7. Edit flashcards \n8. OR go back\n>")
+
+        		INPUT(userStudyChoice)
+
+        		CASE:
+
+        			// IF user wants flashcards REPEAT
+
+       			userStudyChoice = "flashcards" OR userStudyChoice = "Flashcards" OR userStudyChoice = '1':
+
+            				CALL StudyFlashcards(*flashcardInfo)
+
+
+
+        			// IF user wants to fill IN the blanks
+
+        			userStudyChoice = "Fill IN the blanks" OR userStudyChoice = "fill IN the blanks" OR userStudyChoice = "blanks" OR userStudyChoice = '2':
+
+            				CALL blanks(*flashcardInfo) 
+
+
+
+        			// IF user wants to do a test 
+
+        			CASE: userStudyChoice = "Do a test" OR userStudyChoice = "test" OR userStudyChoice = "Test" OR userStudyChoice = "do a test" OR userStudyChoice = '3':
+
+           				CALL test(*flashcardInfo)
+
+
+
+        			// IF user wants to create notes 
+
+        			userStudyChoice = "Create notes" OR userStudyChoice = "create notes" OR userStudyChoice = "notes" OR userStudyChoice = "Notes" OR userStudyChoice = "Note" OR userStudyChoice = "note" OR userStudyChoice = '4':
+
+            				CALL notes(*flashcardInfo)
+
+
+
+        			// IF user wants to do a match up game 
+
+        			userStudyChoice = "match flashcards" OR userStudyChoice = "Match flashcards" OR userStudyChoice = "Match" OR userStudyChoice = "match" OR userStudyChoice = '5':
+
+            				CALL matchFlashcards(*flashcardInfo)
+
+
+
+        			// IF user wants to do multichoice 
+
+       			userStudyChoice = "multichoice" OR userStudyChoice = "Multichoice" OR userStudyChoice = "multi" OR userStudyChoice = "Multi" OR userStudyChoice = '6':
+
+            				CALL multichoice(*flashcardInfo)
+
+
+
+        			// IF user wants to go back
+
+        			userStudyChoice IN goBack OR userStudyChoice = '8':
+
+            				CALL readSubject()
+
+
+
+        			// IF user wants to edit OR change their flashcards 
+
+        			userStudyChoice = 'edit' OR userStudyChoice = 'Edit' OR userStudyChoice = 'edit flashcards' OR userStudyChoice = 'Edit flashcards' OR userStudyChoice = '7':
+
+            				CALL editFlashcards(*flashcardInfo)
+
+
+
+        			// makes user INPUT correct value     
+	
+       			OTHERWISE:
+
+            				OUTPUT("please select a correct option")    
+		END CASE
+	
+	END WHILE 
+
+END FUNCTION studyChoice
+
+        
+
+
+
+DEFINE FUNCTION StudyFlashcards(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList)
+
+    	// counts position of flashcard, uses -1, as when starting WHILE loop instantly ads a 1
+
+    	counter <-- -1
+
+    	// saves the index of the list flashcards you answer wrong
+
+    	wrongIndex <-- []
+
+
+
+  	  // makes user INPUT a valid answer
+
+   	 WHILE True:
+
+		OUTPUT("\nWould you like to study by answering terms, OR definitions OR go back\n>")
+
+     		INPUT(flashcardTermOrDef)
+		
+		CASE:
+
+        			flashcardTermOrDef IN goBack:
+
+            			CALL StudyChoice(*flashcardInfo)
+
+        			flashcardTermOrDef = "definitions" OR flashcardTermOrDef = "Definitions" OR flashcardTermOrDef = "Definition" OR flashcardTermOrDef = "definition" OR flashcardTermOrDef = "Def" OR flashcardTermOrDef = "def" OR flashcardTermOrDef = "Defs" OR flashcardTermOrDef = "defs" OR flashcardTermOrDef = "Terms" OR flashcardTermOrDef = "terms" OR flashcardTermOrDef = "term" OR flashcardTermOrDef = "Term":
+
+            			BREAK OUT OF LOOP
+
+        			OTHERWISE:
+
+            			OUTPUT("\nPlease INPUT a correct value")
+
+		END CASE          
+	
+	END WHILE
+	   	
+	CASE:			
+
+    		// IF user decides to answer with definitions, flashcardList1/2 will be equal to TermsList, DefList
+
+    		flashcardTermOrDef = "definitions" OR flashcardTermOrDef = "Definitions" OR flashcardTermOrDef = "Definition"or flashcardTermOrDef = "definition" OR flashcardTermOrDef = "Def" OR flashcardTermOrDef = "def" OR flashcardTermOrDef = "Defs" OR flashcardTermOrDef = "defs":
+
+        			flashcardList1 <-- termsTotalList
+
+        			flashcardList2 <-- defsTotalList
+
+    		// IF user decides to answer with definitions, flashcardList1/2 will be equal to DefList, TermList
+
+    		flashcardTermOrDef = "Terms" OR flashcardTermOrDef = "Term" OR flashcardTermOrDef = "terms" OR flashcardTermOrDef = "term":
+
+        			flashcardList1 <-- defsTotalList
+
+        			flashcardList2 <-- termsTotalList
+
+	END CASE
+
+
+
+    	WHILE True:
+
+        		// counts the position of the flashcards
+
+        		counter <-- counter + 1
+
+
+
+        		// IF all flashcards answered then move to flashcard decision
+
+        		IF counter >= flashcardList1.LENGTH THEN:
+
+            			CALL flashcardDecision(wrongIndex, flashcardList1, flashcardList2, *flashcardInfo)
+
+		END IF
+
+        
+
+        		// showing flashcard section of code
+
+        		OUTPUT(flashcardList1[counter])
+
+		OUTPUT("\nPress enter to reveal definition \n>")
+
+        		INPUT()
+
+        		OUTPUT(flashcardList2[counter])
+
+		OUTPUT("\nDid you get the flashcard right, y OR n \n>")
+
+        		INPUT(rightOrWrong)
+
+
+
+       		// makes sure user answer is valid
+
+        		CALL yOrN(rightOrWrong)
+
+
+
+        		// IF user answered flashcard correctly then don't add counter num (index of list) to wrongIndex
+
+        		IF rightOrWrong IN YES THEN:
+
+            		SKIP TO NEXT ITERATION
+
+        		// IF user answered flashcard incorrectly then adds counter num (index of list) to wrongIndex
+
+        		OTHERWISE:
+
+            			wrongIndex <-- wrongIndex + [counter]
+		END IF
+
+	END WHILE 
+
+END FUNCTION studyFlashcards
+
+
+DEFINE FUNCTION wrongFlashcard(wrongIndex, flashcardList1, flashcardList2, termsTotalList, defsTotalList, userChosenSubject, userChosenFlashcardSet):
+
+  	flashcardInfo <-- (termsTotalList, defsTotalList, userChosenSubject, userChosenFlashcardSet)
+
+    	// keeps track of the position of the list, of FOR wrongIndex
+
+    	counter2 <-- -1
+
+    	// keeps track of how many times a element has been removed from wrong index 
+
+    	counter3 <-- 0
+
+
+
+    	OUTPUT("\nThese are the flashcards you got wrong, \ntry to remember them to the best of your ability")
+
+
+
+    	WHILE True:
+
+        		// keeps track of how many times loop had been repeated 
+
+        		counter2 <-- counter2 + 1
+
+
+
+        		// IF all flashcards answered correctly then go back to flashcardDecision
+
+        		IF wrongIndex = [] THEN:
+
+            			OUTPUT("Good job, you remembered all the flashcards")
+
+            			CALL flashcardDecision(wrongIndex, flashcardList1, flashcardList2, *flashcardInfo)
+
+		END IF 
+
+
+        		// once user gone through all flashcards, repeats ones answered incorrectly and sets counters back to beginning 
+
+        		IF counter2 + counter3 >= wrongIndex.LENGTH THEN:
+
+            			counter2 <-- -1
+
+            			counter3 <-- 0
+
+            			SKIP TO NEXT ITERATION
+
+		END IF
+
+        
+
+        		// showing flashcard section of code 
+
+        		OUTPUT(flashcardList1[(wrongIndex[counter2 + counter3])])
+
+		OUTPUT("\nPress enter to reveal definition \n>")
+
+        		INPUT()
+
+        		OUTPUT(flashcardList2[(wrongIndex[counter2 + counter3])])
+
+		
+		OUTPUT("\nDid you get the flashcard right, y OR n \n>")
+		
+       		INPUT(rightOrWrong)
+
+        		// makes sure user INPUT is valid
+
+        		CALL yOrN(rightOrWrong)
+
+        		// IF user answered flashcard correctly removes flashcard from the deck (wrongIndex) so to speak
+
+        		IF rightOrWrong IN YES THEN:
+
+            		// deletes flashcard position from wrongIndex
+
+            		DELETE wrongIndex[(counter2 + counter3)]
+
+            		counter3 <-- counter3-1
+
+            		SKIP TO NEXT ITERATION
+
+        		// IF user did not get flashcard right, keep it and REPEAT to loop
+
+		END IF 
+	
+	END WHILE
+
+END FUNCTION wrongFlashcard
+
+
+
+DEFINE FUNCTION flashcardDecision(wrongIndex, flashcardList1, flashcardList2, termsTotalList, defsTotalList, userChosenSubject, userChosenFlashcardSet):
+
+    	flashcardInfo <-- (termsTotalList, defsTotalList, userChosenSubject, userChosenFlashcardSet)
+
+    	WHILE True:
+		
+		output("\nWould you like to REPEAT studing, \nredo this flashcard set OR \ngo back to study options \n>")
+
+        		INPUT(options)
+
+		case:
+
+        			// IF user wishes to REPEAT 
+
+        			options = "continue" OR options = "Continue" OR options = "Continue studing" OR options = "continue studing" OR options = "study" OR options = "Study":
+
+            			IF wrongIndex = [] THEN:
+
+                				CALL StudyFlashcards(*flashcardInfo)
+
+            			OTHERWISE:
+
+                				CALL wrongFlashcard(wrongIndex, flashcardList1, flashcardList2, *flashcardInfo)
+
+				END IF
+        
+
+	
+        			// IF user wants to redo flashcards 
+
+        			options = "Redo" OR options = "redo":
+
+            			CALL StudyFlashcards(*flashcardInfo)
+		
+        			
+		
+        			// IF user wants to go back 
+
+        			options IN goBack:
+
+            			CALL StudyChoice(*flashcardInfo)
+		
+		END CASE 
+
+	END WHILE 
+
+END FUNCTION flashcardDecision
+
+
+
+// creats notes, ordered a to z
+
+DEFINE FUNCTION notes(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	flashcardInfo <-- (termsTotalList, defsTotalList, userChosenSubject, userChosenFlashcardSet)
+
+    	counter <-- -1
+
+    	position <-- []
+
+    
+
+    	// sorts the terms into alphabetical order 
+
+    	sortedTermList <-- []
+
+    	sortedTermList <-- sortedTermList + SORTALPHABETICALLY(termsTotalList) // SORTALPHABETICALLY means that it sorts a list alphabeticaly a-z
+
+
+
+    	// finds position to original list 
+
+    	counter <-- 0
+
+    	position <-- []
+
+    	WHILE counter < termsTotalList.LENGTH:
+
+        		position <-- position + [termsTotalList.index(sortedTermList[counter])]
+
+        		counter <-- counter + 1
+
+
+
+    counter <-- 0
+
+    // wrights notes into text file 
+
+    with open(userChosenSubject + ' ' + userChosenFlashcardSet + ' Note.txt','a') as userNotes:
+
+        	WHILE counter < termsTotalList.LENGTH:
+
+            	userNotes.write(sortedTermList[counter] + "\n")
+
+         	   	userNotes.write(defsTotalList[(position[counter])] + "\n\n")
+
+           		counter <-- counter + 1
+	
+	END WHILE
+    
+
+    OUTPUT("\nYour notes have been created \nthe file name is: \n" + userChosenSubject + ' ' + userChosenFlashcardSet + ' Note.txt\n')
+
+    userNotes.close()
+
+    CALL StudyChoice(*flashcardInfo)
+
+END FUNCTION notes
+
+
+
+DEFINE FUNCTION matchFlashcards(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList)
+
+    	// list of alphabete capitals, and lowercase 
+
+    	L <-- list(ascii_lowercase) + [letter1 + letter2 + letter3 FOR letter1 IN ascii_lowercase FOR letter2 IN ascii_lowercase FOR letter3 IN ascii_lowercase]
+
+	END FOR
+
+    	U <-- list(ascii_uppercase) + [letter1 + letter2 + letter3 FOR letter1 IN ascii_uppercase FOR letter2 IN ascii_uppercase FOR letter3 IN ascii_uppercase]
+
+	END FOR 	
+
+   
+
+    	// determines IF enough flashcards are present
+
+    	WHILE True:
+
+        		IF termsTotalList.LENGTH < 5 THEN:
+
+            		OUTPUT("You need at least five flashcards to use this function\n")
+
+			CALL StudyChoice(*flashcardInfo)
+
+        		OTHERWISE:
+
+            		BREAK OUT OF LOOP
+
+		END IF 
+
+	END WHILE
+
+
+    	// determines how many flashcards user would like to match, 
+
+    	WHILE True:
+
+		OUTPUT("How many flashcards would you like to match\n>")
+
+        		INPUT(numInput)
+
+        		// checks IF INPUT is a number OR word, converts word to number IF a number word 
+
+        		num <-- checkIsDigit(numInput)
+
+        		// makes sure user doesn't enter five flashcards
+
+        		IF num < 5 THEN:
+
+            		OUTPUT("Less then five flashcards is too easy, pick something higher")
+
+			SKIP TO NEXT ITERATION
+
+		END IF 
+
+        		WHILE True:
+
+            		// IF enough flashcards REPEAT 
+
+            		IF num <= termsTotalList.LENGTH THEN:
+
+                			BREAK OUT OF LOOP
+
+            		// IF not enough flashcards are available FOR number, loops back 
+
+            		OTHERWISE:
+
+                			numInput <-- INPUT("Please enter a number within your number of flashcards \nYou have " + termsTotalList.LENGTH + " flashcards \n>")
+
+                			// checks IF INPUT is a number OR word, converts word to number IF a number word 
+
+                			num <-- checkIsDigit(numInput)
+
+			END IF 
+
+		END WHILE 
+
+
+
+        		// shuffles list 1
+
+        		randomShuffle1 <-- random.sample(termsTotalList,num) // random.sample(list, number) randomly picks number inputed of elements from list provided random.sample(list, number) randomly picks number inputed of elements from list provided
+
+        		// save shuffled order to shuffledList1
+
+        		shuffledList1 <-- []
+
+        		shuffledList1 <-- shuffledList1 + randomShuffle1
+
+
+
+        		indexCounter <-- []
+
+        		// used to give index order of new list IN comparison to original order of list1
+
+        		counter <-- -1 
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= num THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF 
+
+            		indexCounter <-- indexCounter + [termsTotalList.index(randomShuffle1[counter])]
+
+		END WHILE
+
+
+
+       		// make selectedList2 correspond with shuffled list1
+
+        		selectedList2 <-- []
+
+        		counter <-- -1
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= num THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF 
+
+            		selectedList2 <-- selectedList2 + [defsTotalList[indexCounter[counter]]]
+
+		END WHILE 
+
+
+
+        		// shuffles the order of list2 
+
+        		randomShuffle2 <-- random.sample(selectedList2, num) // random.sample(list, number) randomly picks number inputed of elements from list provided
+
+        		// saves shuffle order 
+
+        		shuffledList2 <-- []
+
+        		shuffledList2 <-- shuffledList2 + randomShuffle2
+
+
+
+        		// used to give index order of new list IN comparison to original order of list2
+
+        		indexCounter2 <-- []
+
+        		counter <-- -1
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= num THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF
+
+            		indexCounter2 <-- indexCounter2 + [defsTotalList.index(shuffledList2[counter])]
+
+		END WHILE
+
+
+
+        		// creates dictionary of terms to defs being used
+
+        		answerKey <-- {}
+
+        		counter <-- -1 
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+           			IF counter >= num THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF 
+
+            		// adds term and DEFINE FUNCTION to dictionary
+
+            		answerKey.update({shuffledList1[counter]: selectedList2[counter]}) // update adds new {key: value} to dictionary	
+
+		END WHILE 
+
+
+
+        		// creates dictionary of terms to defs being used
+
+        		answerKeyChecker <-- {}
+
+        		counter <-- -1
+
+        		wrong <-- 0
+
+        		correct <-- 0
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= num THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF
+
+            		// adds term and DEFINE FUNCTION to dictionary
+
+            		answerKeyChecker.update({(shuffledList1[counter]): (selectedList2[counter])}) // update adds new {key: value} to dictionary
+
+
+		END WHILE
+
+
+
+        		// creates list of left column letters
+
+        		counter <-- -1
+
+        		listLeftColumnLetters <-- []
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= num THEN:
+
+                			BREAK OUT OF LOOP
+			END IF
+
+            		listLeftColumnLetters <-- listLeftColumnLetters + [L[counter]]
+
+            	END WHILE
+
+
+
+        		// creates list of right column letters
+
+        		counter <-- -1
+
+        		listRightColumnLetters <-- []
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= num THEN:
+
+               			BREAK OUT OF LOOP
+
+			END IF 
+
+            		listRightColumnLetters <-- listRightColumnLetters + [U[counter]]
+
+		END WHILE 
+
+
+
+        		// OUTPUTs the left and right columns to match up
+
+       		matchOptionInfo <-- (answerKeyChecker, listLeftColumnLetters, shuffledList1, listRightColumnLetters, shuffledList2)
+
+        		CALL OUTPUTMatchOptions(*matchOptionInfo)
+
+
+
+        		// determines how many times have looped
+
+        		countStartDone <-- 0
+
+
+
+        		// IF matched all flashcards
+
+        		userInputTotalList <-- []
+
+        		WHILE True:
+
+            		IF correct >= num THEN:
+
+                			OUTPUT("You have matched all flashcards\n")
+
+                			end_time <-- time.time()
+
+                			time_lapsed <-- end_time - start_time
+
+               			BREAK OUT OF LOOP
+
+			END IF 
+
+
+
+            		// IF first time running this loop, OUTPUT instructions
+
+            		IF countStartDone < 1 THEN:
+
+                			OUTPUT("Match up the terms on left, to definitions on right, \nEnter using given variable, example INPUT left column 'a' INPUT right column'C' \nA timer will start once you have entered the left column, to see how fast you are\n")
+
+
+
+            		// users INPUT FOR left collumn
+
+			OUTPUT("INPUT left column\nor go back \n>")
+
+            		INPUT(userInputLefT)
+
+            		IF userInputLeft = goBack:
+
+                			CALL StudyChoice(*flashcardInfo)
+
+			END IF 
+
+	
+
+            		// starts stopwatch IF first time running
+
+            		IF countStartDone < 1 THEN:
+
+                			start_time <-- time.time()
+
+			END IF 
+
+    
+
+            		// how many times this person has run this loop
+
+            		countStartDone <-- countStartDone + 1
+
+            		// user INPUT FOR right column
+
+			OUTPUT("INPUT right column\n>")
+
+            		INPUT(userInputRight)
+
+
+
+             		// adds user total answer into a list
+
+            		userInputTotalList <-- []
+
+            		counter <-- -1
+
+            		WHILE True:
+
+                			counter <-- counter + 1
+
+				CASE:
+
+                				// IF INPUT is not IN column, then makes user INPUT correct value
+
+                				counter >= (num - correct):
+
+                    					CALL OUTPUTMatchOptions(*matchOptionInfo)
+
+							OUTPUT("Please INPUT a correct value FOR left column\n>")
+					
+                    					INPUT(userInputLeft)
+
+                    					counter <-- -1
+
+                    					SKIP TO NEXT ITERATION
+
+
+
+                				// finds user INPUT FOR left column
+
+                				userInputLeft = listLeftColumnLetters[counter]:
+
+                    					userInputTotalList <-- userInputTotalList + [shuffledList1[counter]]
+
+                    					BREAK OUT OF LOOP
+
+				END CASE
+
+			END WHILE
+
+
+
+            		// finds INPUT FOR right column   
+
+            		counter <-- -1
+
+            		WHILE True:
+
+                			counter <-- counter + 1 
+
+				CASE:
+
+                				// IF INPUT is not IN column, then makes user INPUT correct value
+
+                				counter >= (num - correct):
+
+                    					CALL OUTPUTMatchOptions(*matchOptionInfo) 
+
+							OUTPUT("Please INPUT a correct value FOR right column\n>")                 
+
+                    					INPUT(userInputRight)
+
+                    					counter <-- -1
+
+
+
+                				// finds INPUT FOR right column      
+
+                				userInputRight = listRightColumnLetters[counter]:
+
+                    					userInputTotalList <-- userInputTotalList + [shuffledList2[counter]]
+
+                    					BREAK OUT OF LOOP
+				
+				END CASE 
+
+			END WHILE
+
+			CASE:
+
+           				// IF user total answer is correct
+
+            			answerKeyChecker.getValue(userInputTotalList[0]) = userInputTotalList[1]: //getValue(key) gets the value of the key given
+
+                				// removes flashcard from answer key 
+
+                				DELETE answerKeyChecker[userInputTotalList[0]]
+
+                				// removes term from list1
+
+                				shuffledList1.remove(userInputTotalList[0]) 
+
+                				// removes corresponding letter from list1
+
+                				listLeftColumnLetters.remove(userInputLeft)
+
+                				// removes DEFINE FUNCTION from list2
+
+                				shuffledList2.remove(userInputTotalList[1])
+
+                				// removes corresponding letter from list2
+
+                				listRightColumnLetters.remove(userInputRight)
+
+                				OUTPUT("CORRECT\n")
+
+                				CALL OUTPUTMatchOptions(*matchOptionInfo)
+
+                				correct <-- correct + 1
+
+
+
+            			// determines IF already answered flashcard
+
+            			answerKey.getValue(userInputTotalList[0]) = userInputTotalList[1]: //getValue(key) gets the value of the key given
+
+                				OUTPUT("You have already matched this set\n")
+
+                				CALL OUTPUTMatchOptions(*matchOptionInfo)
+
+
+
+            			// determines IF answer is wrong
+
+            			OTHERWISE:
+
+                				OUTPUT("WRONG\n")
+
+                				wrong <-- wrong + 1
+
+                				CALL OUTPUTMatchOptions(*matchOptionInfo)
+
+			END CASE
+		
+		END WHILE
+
+
+        		// OUTPUTs time taken
+
+        		CALL timeConvert(time_lapsed)
+
+        		// OUTPUTs how many answers you got wrong 
+
+        		OUTPUT("you got " + wrong + " wrong")
+
+        		CALL StudyChoice(*flashcardInfo)    
+	
+	END WHILE
+
+END FUNCTION matchFlashcards
+
+
+// actual fill IN the blanks 
+
+DEFINE FUNCTION blanks(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	// used information to go back to study options 
+
+    	flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList)
+
+    
+
+	OUTPUT("\nHow difficult would you like it to be \nEasy \nMedium \nHard \n>")
+	
+    	INPUT(difficulty)
+
+    	WHILE True:
+
+		CASE:
+
+        			// IF user wants to do easy difficulty 
+
+        			IF difficulty = "easy" OR difficulty = "Easy":
+
+            			mode <-- 20
+
+            			BREAK OUT OF LOOP
+
+
+        			// IF user wants to do medium difficulty 
+
+        			difficulty = "medium" OR difficulty = "Medium":
+
+            			mode <-- 40
+
+            			BREAK OUT OF LOOP
+
+
+        			// IF user wants to do hard difficulty 
+
+        			difficulty = "hard" OR "Hard":
+
+            			mode <-- 60
+
+            			BREAK OUT OF LOOP
+
+
+        			// IF user hasn't put IN a correct value 
+
+        			OTHERWISE:
+
+				OUTPUT("Please INPUT a correct value \n>")
+
+            			INPUT(difficulty)
+
+            			SKIP TO NEXT ITERATION
+
+		END CASE
+
+	END WHILE
+
+
+
+    	// determine amount looped, uses number to determine what element IN list, user is on
+
+   	 counterDef <-- -1
+
+
+
+    	// determine how much user got right and wrong
+
+    	correctTotal <-- 0
+
+    	wrong <-- 0
+
+
+
+    	WHILE True:
+
+        		correct <-- 0
+
+        		// used to determine what definition user is on 
+
+        		counterDef <-- counterDef + 1
+
+
+
+        		// only IF counterDef is equal to the number of definitions
+
+        		IF counterDef >= defsTotalList.LENGTH:
+
+            		OUTPUT("You have completed all flashcards")
+
+            		CALL StudyChoice(*flashcardInfo)
+
+		END IF 
+
+
+
+        		// used to BREAK up definition user is on, into individual readable words 
+
+        		defElement <-- defsTotalList[counterDef]
+
+        		defSplit <-- defElement.split(" ")
+
+        		defListOriginal <-- []
+
+        		defListOriginal <-- defListOriginal + defSplit
+
+
+
+        		// determines amount to replace 
+
+        		amount <-- ROUNDUP(mode/100*defListOriginal.LENGTH) //ROUNDUP meand to round up to the closest whole number
+
+
+
+        		// samples flashcards to replace
+
+        		sampleListDefs <-- [] 
+
+        		sampleListDefs <-- random.sample(defListOriginal, amount) // random.sample(list, number) randomly picks number inputed of elements from list provided
+
+        		editListDef <-- []
+
+        		editListDef <-- editListDef + sampleListDefs
+
+
+
+        		// finds correct position to original list and put them IN order 
+
+        		position <-- []
+
+        		counter <-- -1
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= amount THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF 
+
+            		position <-- position + [defListOriginal.index(sampleListDefs[counter])]
+
+		END WHILE
+
+        		position.sort() // .SORT() means to sort any list provided into numberical or alphabetical order
+
+
+
+        		// gives number list, that will be used towards answerKey, compare userNum to userAnswer
+
+        		number <-- -1
+
+        		numberListsAnswer <-- []
+
+        		WHILE True:
+
+            		number <-- number + 1
+
+            		IF number >= amount THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF
+
+            		numberListsAnswer <-- numberListsAnswer + [number]
+
+		END WHILE
+
+
+
+        		// makes number list ready FOR OUTPUTing
+
+        		numberDisplay <-- []
+
+        		counter <-- -1
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF numberDisplay.LENGTH = numberListsAnswer.LENGTH THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF
+
+            		numberDisplay <-- numberDisplay + ["____" + numberListsAnswer[counter]) + "____"]
+
+		END WHILE
+
+
+
+        		// sorts the random sampled list into order 
+
+        		sortedListDefs <-- []
+
+        		counter <-- -1
+
+        		WHILE True:
+
+            		counter <-- counter + 1
+
+            		IF counter >= amount THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF
+
+	            	sortedListDefs <-- sortedListDefs + [defListOriginal[position[counter]]] 
+
+		END WHILE	
+
+
+
+        		WHILE True:
+
+            		// determines IF all answer are correct FOR this definition 
+
+            		IF correct >= amount THEN:
+
+                			BREAK OUT OF LOOP
+
+			END IF
+
+
+
+            		// replaces variables
+
+            		defList <-- defListOriginal
+
+            		counter <-- -1
+
+            		WHILE True:
+
+                			counter <-- counter + 1
+
+                			IF counter >= (amount - correct) THEN:
+
+                    			BREAK OUT OF LOOP
+
+				END IF
+
+                			defList <-- [w.replace(sortedListDefs[counter], numberDisplay[counter]) FOR w IN defList] \\ replaces all words chosen with numbers, the blanks that user has to fill in
+
+				END FOR
+
+
+			END WHILE
+
+
+            		// removes commars and any non important variables from list, to have user answer checked against 
+
+            		sortedListDefs <-- checkNotImportant(sortedListDefs)
+
+
+
+            		// makes answer key to check user INPUT against
+
+            		answerKeyChecker <-- {}
+
+            		counter <-- -1
+
+            		WHILE True:
+
+                			counter <-- counter + 1
+
+                			IF counter >= amount - correct:
+
+                    			BREAK OUT OF LOOP
+
+				END IF
+
+                			// adds number to DEFINE FUNCTION IN dictionary 
+
+                			answerKeyChecker.update({numberListsAnswer[counter]: sortedListDefs[counter]})   \\ update adds new {key: value} to dictionary
+
+			END WHILE
+
+
+
+            		IF correct < 1 THEN:
+
+                			// used to check against IF user already answered
+
+                			answerKey <-- {}
+
+                			counter <-- -1
+
+                			WHILE True:
+
+                    			counter <-- counter + 1
+
+                    			IF counter >= amount THEN:
+
+                        				BREAK OUT OF LOOP
+
+
+					END IF
+
+                    				// adds number to definition IN dictionary 
+
+                    				answerKey.update({numberListsAnswer[counter]: sortedListDefs[counter]}) // update adds new {key: value} to dictionary
+
+
+				END WHILE	
+
+
+            			// OUTPUTs term to fill IN 
+
+            			OUTPUT("\nYour Term is: \n" + termsTotalList[counterDef] + '\n')
+
+            
+
+            			// OUTPUTs DEFINE FUNCTION list, with replaced words, having them joined into a string
+
+            			OUTPUT(' '.join(x FOR x IN defList))
+				END FOR
+
+			END IF
+
+
+
+            		// IF user wants to go back 
+
+            		numInput <-- INPUT("Input the number you want to answer OR go back \n>")
+
+            		IF numInput IN goBack THEN:
+
+                			CALL StudyChoice(*flashcardInfo)
+
+			END IF
+
+
+
+            		// checks IF INPUT is a number OR word, converts word to number IF a number word 
+
+            		nums <-- checkIsDigit(numInput)
+
+			OUTPUT("\nInput the answer of that number \n>")
+
+            		INPUT(userInputAnswer)
+
+
+
+            		// removes what is within brackets IN a string, removes notImportant information, converts string to lowercase
+
+            		userInputAnswer <-- checkNotImportant(userInputAnswer)            	
+
+
+
+            		// adds user chosen number, and answer to userTotalAnswer
+
+            		userTotalAnswer <-- []
+
+           			userTotalAnswer <-- userTotalAnswer + [nums]
+
+            		userTotalAnswer <-- userTotalAnswer + [userInputAnswer]
+
+            
+
+            
+
+			CASE:
+
+            			// IF user answer correctly continues 
+
+            			userTotalAnswer[1] IN answerKeyChecker.getValue(userTotalAnswer[0]): //getValue(key) gets the value of the key given
+
+                				OUTPUT("CORRECT")
+
+                				// deletes question from list
+
+                				DELETE answerKeyChecker[userTotalAnswer[0]]
+
+                				// remove question number to display fro list 
+
+               				DELETE numberDisplay[numberListsAnswer.index(userTotalAnswer[0])]
+
+                				// removes question number from list 
+
+                				numberListsAnswer.remove(userTotalAnswer[0])
+
+                				// removes answer from list
+
+                				sortedListDefs.remove(userTotalAnswer[1])
+
+                				// adds a correct score
+
+                				correct <-- correct + 1
+
+                				// used to find total correct score 
+	
+                				correctTotal <-- correctTotal + 1
+
+            
+
+            			// IF user repeated a number 
+
+            			userTotalAnswer[1] IN answerKey.getValue(userTotalAnswer[0]): //getValue(key) gets the value of the key given
+
+                				OUTPUT("You have already completed this one")
+
+
+
+            			// IF user has entered wrong answer 
+
+            			OTHERWISE:
+
+                				OUTPUT("WRONG \nTry again")
+
+                				wrong <-- wrong+1	
+
+			END CASE
+
+			SKIP TO NEXT ITERATION
+
+		END WHILE
+
+		SKIP TO NEXT ITERATION
+
+	END WHILE
+
+END FUNCTION blanks
+
+
+
+DEFINE FUNCTION multichoice(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	// flashcard info 
+
+    	flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList)
+
+
+
+    	// makes sure user has enough flashcards to be able to use this function
+
+    	IF termsTotalList.LENGTH < 4 THEN: // .LENGTH gives length of list
+
+        		OUTPUT("You do not have enough flashcards FOR this mod, \nyou need at least four, you only have " + termsTotalList.LENGTH + " flashcards")
+
+        		CALL StudyChoice(*flashcardInfo)
+
+	END IF
+
+
+
+
+    	// adds flashcards terms to termChoice, IN which they can be edited, and removed 
+
+    	termChoice <-- []
+
+    	termChoice <-- termChoice + termsTotalList
+
+
+
+    	// used as list FOR lowercase letters up to three digits "abc"
+
+    	L <-- list(ascii_lowercase) + [letter1+letter2+letter3 FOR letter1 IN ascii_lowercase FOR letter2 IN ascii_lowercase FOR letter3 IN ascii_lowercase]
+	END FOR
+
+
+
+    	// total amount of correct answers
+
+    	correct <-- 0
+
+
+
+    	// total value of incorrect answers 
+
+    	wrong <-- 0
+
+    	WHILE True:
+
+        		// IF completed all flashcards, ends 
+
+        		IF correct = termsTotalList.LENGTH THEN:
+
+            		OUTPUT("You have matched all flashcards")
+
+            		// displays amount right and wrong
+
+            		OUTPUT("You got " + correct + " correct, and \n you got " + wrong + " wrong")
+
+            		// little message FOR how many user got right and wrong 
+
+			CASE:
+
+            			correct - wrong <= 0:
+
+                				OUTPUT("Better luck next time")
+
+            			wrong >= 0:
+
+                				OUTPUT("EXCELENT WORK")
+
+            			correct - wrong > 0:
+
+                				OUTPUT("Good job")
+
+			END CASE
+
+            		CALL StudyChoice(*flashcardInfo)
+
+		END IF
+
+	END WHILE
+
+
+
+        	// picks a random term, FOR user to answer
+
+        	term <-- random.sample(termChoice, 1) // random.sample(list, number) randomly picks number inputed of elements from list provided
+
+
+        	// finds the corresponding term to the answer 
+
+        	Def <-- defsTotalList[termsTotalList.index(term[0])]
+
+
+
+        	// makes a list of all definitions, excluding the correct one
+
+        	sampleOptions <-- []
+
+        	sampleOptions <-- sampleOptions + defsTotalList
+
+        	// removes correct definition from the list 
+
+        	sampleOptions.remove(Def)
+
+        	// randomly picks three definitions to add to the multichoice that is not the correct definition
+
+        	randomSample <-- random.sample(sampleOptions,3) // random.sample(list, number) randomly picks number inputed of elements from list provided
+
+
+
+       	// adds randomly incorrect choices to the list and correct choice
+
+        	displayList <-- []
+
+        	displayList <-- displayList + randomSample
+
+        	displayList <-- displayList + [Def]
+
+        	// shuffles the choices, IN how they are displayed 
+
+        	random.shuffle(displayList) // random.shuffle(list) means to rearange the list provided in a random way
+
+
+
+        	// creates a list of letters, length of 4
+
+        	listLetters <-- []
+
+        	counter <-- 0
+
+        	WHILE counter < 4:
+
+            	listLetters <-- listLetters + [L[counter]]
+
+		counter <-- counter + 1
+
+	END WHILE
+
+
+
+        	// used to display choices to answer term, with corresponding letters 
+
+        	counter <-- 0
+
+        	WHILE counter < 4:            	        	
+
+            	OUTPUT(listLetters[counter]+".   "+displayList[counter])
+
+		counter <-- counter + 1    
+
+	END WHILE
+
+
+
+        	// the options user can pick, with corresponding definitions
+
+        	options <-- {}
+
+        	counter <-- 0 
+
+
+
+	// adds the amount of the options displayed, which are four 
+
+        	WHILE counter < 4:
+
+            	// adds corresponding letters to definition IN dictionary 
+
+            	options.update({listLetters[counter]: displayList[counter]}) // update adds new {key: value} to dictionary
+
+		counter <-- counter + 1
+
+	END WHILE
+
+
+
+        	// explains instructions FOR the first time 
+
+        	OUTPUT("Your term is: " + term[0])
+
+        	IF wrong OR correct <= 0 THEN:
+
+            	OUTPUT("To enter your definition, answer by INPUTing the letter, like 'a'")
+
+	END IF
+
+
+
+        	// users choice of definitions
+
+        	userInput <-- INPUT("Enter the definition that matches this term, OR go back \n>")
+
+
+
+        	IF userInput IN goBack:
+
+            	CALL StudyChoice(*flashcardInfo)
+
+	END IF 
+
+
+
+        	WHILE True:
+
+            	// IF user has Inputed a correct value 
+
+            	IF userInput IN listLetters THEN:
+
+
+                		// IF users INPUT is correct
+
+                		IF options.getValue(userInput) = Def THEN: //getValue(key) gets the value of the key given
+
+                    			OUTPUT("CORRECT\n")
+
+                    			// removes the term to be answered from list, so it is not repeated
+
+                    			termChoice.remove(term[0])
+
+                    			// adds one correct value
+
+                    			correct <-- correct + 1
+
+                    			BREAK OUT OF LOOP
+
+
+
+
+                		// IF user INPUT is wrong
+
+                		OTHERWISE:
+
+                    			OUTPUT("WRONG\n")
+
+                    			// adds a wrong value to score 
+
+                    			wrong <-- wrong + 1
+
+                    			BREAK OUT OF LOOP
+
+
+			END IF
+
+
+
+            	// IF user has not INPUTed a correct value 
+
+            	OTHERWISE:
+
+                		// used to display choices to answer term, with corresponding letters 
+
+                		counter <-- 0
+
+                		WHILE counter < 4:
+                    			
+                    			OUTPUT(listLetters[counter] + ".   " + displayList[counter])
+				
+				counter <-- counter + 1
+
+			END WHILE
+
+
+                		userInput <-- INPUT("please enter a correct value ")
+
+		END IF
+
+	END WHILE 
+
+END FUNCTION MULTICHOICE
+
+
+
+DEFINE FUNCTION test(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    	// flashcard info 
+
+    	flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList) 
+
+    	// time limit 
+
+    	OUTPUT("Input the time limit, IN hours, minutes, seconds")
+
+    	// converted to seconds 
+
+	OUTPUT("INPUT hours: ")
+
+    	INPUT(hours) * 3600
+
+    	// converted to seconds 
+	
+	OUTPUT("INPUT minutes: ")
+
+    	INPUT(minutes) * 60
+
+	OUTPUT("INPUT seconds: ")
+
+    	INPUT(second)
+
+
+
+
+
+    	timeDuration <-- hours + minutes + second
+
+    	// used to time length of time per second
+
+    	timeStart <-- time.time()
+
+
+
+    	// used FOR testing terms and defs
+
+    	terms <-- []
+	
+    	defs <-- []
+
+
+
+    	// amount of flashcards 
+	
+	OUTPUT('\nInput the amount of flashcards you would like to do, \ntake into consideration the amount of time you set yourself \n>')
+
+    	INPUT(amount)
+
+    	amount <-- checkIsDigit(amount)
+
+    	// IF user gives an incorrect value, something not a number 
+
+    	WHILE amount < 0:
+
+        		amount <-- INPUT('\nPlease INPUT a correct value\n')
+
+        		amount <-- checkIsDigit(amount)
+
+	END WHILE
+
+    
+
+    	// IF user gives a greater number, then number of flashcards 
+
+    	WHILE amount > termsTotalList.LENGTH:
+
+        		amount <-- INPUT('\nYou have given a number that is greater then \nthe amount of flashcards you have, you have ' + termsTotalList.LENGTH + '\nflashcards, INPUT a number equal too OR below this amount \n>')
+
+        		amount <-- checkIsDigit(amount)
+
+	END WHILE
+
+
+
+    	// takes amount of flashcards you have given
+
+    	terms <-- terms + random.sample(termsTotalList, amount) // random.sample(list, number) randomly picks number inputed of elements from list provided
+
+
+    	// finds index of shuffled list to original list
+
+    	Index <-- []
+
+    	counter <-- 0 
+
+    	WHILE counter < amount: 
+
+        		Index <-- Index + [termsTotalList.index(terms[counter])
+
+		counter <-- counter + 1
+
+	END WHILE
+
+
+
+    	// gives the correct definition corresponding to the position of shuffled terms
+
+    	counter <-- 0
+
+    	WHILE counter < amount:
+
+        		defs <-- defs + [defsTotalList[Index[counter]]]
+
+        		counter <-- counter + 1
+
+	END WHILE
+
+
+
+    	// make definitions into answers not containing not important information 
+
+    	defs <-- checkNotImportant(defs)
+
+
+
+    	// makes answer key FOR terms and definitions, IN correct order, term 1 is DEFINE FUNCTION 1, even when shuffled
+
+    	flashcardList <-- {}
+
+    	counter <-- 0 
+
+    	WHILE counter < amount:        		
+
+        		// adds term to definition to dictionary 
+
+        		flashcardList.update({terms[counter]:defs[counter]}) // update adds new {key: value} to dictionary
+
+
+		counter <-- counter + 1
+	
+	END WHILE
+
+
+
+    	// variables to be used when answering
+
+    	correct <-- 0             // used to determine how many correct answers user entered
+
+    	wrong <-- 0               // used to determine how many incorrect answers user entered
+
+    	wrongFlashcards <-- []    // records position (index) of which answers user got wrong
+
+    	userAnswerWrong <-- []    // records the user incorrect answer
+
+    	skip <-- []               // used to determing position of skiped answers
+
+
+
+    	skipCounter <-- 0         // number of times term has been removed without resetting
+
+    	counter <-- -1            // counter FOR first questions, not skiped 
+
+    	counter2 <-- -1           // counter FOR skiped questions 
+
+
+
+    	// continues to allow user to answer IF not gone over time limit they entered 
+
+    	WHILE time.time() < timeStart + timeDuration:
+
+        		counter <-- counter  + 1
+
+        		// IF answered all questions moves on to the ones user skiped 
+
+        		IF counter = flashcardList.LENGTH THEN:
+
+            		// IF user did not skip any questions do not REPEAT 
+
+            		IF skip = [] THEN:
+
+                			BREAK OUT OF LOOP
+
+
+			END IF
+
+            		OUTPUT("\nThese are the questions you skiped \n")
+
+            		counter2 <-- -1
+
+            		// WHILE there are still positions of flashcards of ones skipped, REPEAT
+
+            		WHILE skip != []: 
+
+                			counter2 <-- counter2 + 1
+
+                			// resets the counters back to original once user has gone through all flashcards 
+
+                			IF skipCounter + counter2 = skip.LENGTH THEN:
+
+                    			counter2 <-- 0
+
+                    			skipCounter <-- 0
+
+				END IF
+
+                			OUTPUT("Your term is: " + list(flashcardList)[skip[counter2 + skipCounter]])
+
+				OUTPUT("Input your answer FOR this definition \n>")
+
+                			INPUT(answer)
+
+                			answer <-- checkNotImportant(answer) // removes all not important information from users answer
+
+
+				CASE:
+	
+                				answer IN goBack:
+
+                    				CALL StudyChoice(*flashcardInfo)
+
+                				// IF user answer is correct to the definition REPEAT below 
+	
+                				flashcardList.getValue(list(flashcardList)[skip[counter2 + skipCounter]]) = answer: //getValue(key) gets the value of the key given
+
+                    				correct <-- correct + 1 
+
+                    				// removes position of flashcard, so it is not repeated again 
+
+                    				DELETE skip[counter2 + skipCounter] 
+	
+                    				// removes number to allow program to know that there is one less variable IN skip
+
+                    				skipCounter <-- skipCounter - 1
+
+                
+
+                				// IF user skiped REPEAT below
+
+                				answer = 'skip':
+
+                    				SKIP TO NEXT ITERATION
+
+                				// IF user answered wrong REPEAT below 
+
+                				OTHERWISE:
+
+                    				wrong <-- wrong + 1
+
+                    				// adds position two list of incorrect answer 
+	
+                    				wrongFlashcards <-- wrongFlashcards + [skip[counter2 + skipCounter]]
+
+                    				// adds users incorrect answer to be displayed latter 
+
+                    				userAnswerWrong <-- userAnswerWrong + [answer]
+
+                    				// removes position of flashcard, so it is not repeated again 
+
+                    				DELETE skip[counter2 + skipCounter]
+
+                    				// removes number to allow program to know that there is one less variable IN skip
+
+                    				skipCounter <-- skipCounter - 1
+
+            					// onces answered every question, breaks out of loop 
+					
+				END CASE
+
+			END WHILE
+
+            		BREAK OUT OF LOOP
+     
+
+		END IF      
+
+
+
+       	 	OUTPUT("Your term is: " + list(flashcardList)[counter])
+
+       	 	IF counter <= 0 THEN:
+
+			OUTPUT("Input your answer FOR this definition, \nor skip the question, IF you have time you can come back to this question \nor go back \n>")
+
+            		INPUT(answer)
+
+       	 	OTHERWISE:
+
+			OUTPUT("Input your answer FOR this definition, skip, OR go back \n>")
+
+            		INPUT(answer)
+
+		END IF
+
+        	answer <-- checkNotImportant(answer) // removes all not important information from users answer
+
+
+
+	CASE:
+
+        		// IF user decides to go back (quit)
+
+        		answer IN goBack:
+
+            		CALL StudyChoice(*flashcardInfo)
+
+        		// IF user answer is correct REPEAT below 
+
+        		flashcardList.getValue(list(flashcardList)[counter]) = answer://getValue(key) gets the value of the key given
+
+            		// adds one correct
+
+            		correct <-- correct + 1
+
+        		// IF user skiped, adds position of skiped flashcard to skip
+
+        		answer = 'skip':
+
+            		skip <-- skip + [counter]
+
+        		// IF user answered wrong REPEAT below 
+
+        		OTHERWISE:
+
+            		// adds wrong
+
+            		wrong <-- wrong + 1
+
+            		// adds position of incorrect answer 
+
+            		wrongFlashcards <-- wrongFlashcards + [counter]
+
+            		// adds user incorrect answer to be displayed later 
+
+            		userAnswerWrong <-- userAnswerWrong + [answer]
+
+	END CASE
+
+
+
+    	// IF user ran out of time display below 
+
+    	IF counter != flashcardList.LENGTH OR skip != [] THEN:
+
+        		OUTPUT("Times up ")
+
+    	// IF user did not run out of time, display below 
+
+    	OTHERWISE:
+
+        		OUTPUT("You have answered all questions, well done")
+
+	END IF
+
+
+
+    	// calculates percentage of users score
+
+    	percentage <-- correct / flashcardList.LENGTH * 100)
+
+    	OUTPUT("You got " + correct + " right, and " + wrong + " wrong, thats " + percentage + "%")
+
+
+	CASE:
+	
+    		// grade rating 
+
+    		percentage > 70:
+
+        			OUTPUT("EXCELENT \n")
+
+    		50 < percentage > 70:
+
+        			OUTPUT("Good job \n")
+
+    		OTHERWISE:
+
+        			OUTPUT("Better luck next time \n")
+
+	END CASE
+
+
+
+    	// IF user got answers wrong displays them below
+
+    	IF wrongFlashcards != [] THEN:
+
+        		OUTPUT("These were the questions you got wrong \n")
+
+        		// variables of original score and new score
+
+        		newWrong <-- 0
+
+        		newWrong <-- newWrong + wrong
+
+        		newCorrect <-- 0
+
+        		newCorrect <-- newCorrect + correct
+
+        		counter <-- -1
+
+        		WHILE counter < wrongFlashcards.LENGTH:
+
+            		// OUTPUTs term
+
+            		OUTPUT("The term was: " + list(flashcardList)[wrongFlashcards[counter]])
+
+            		// OUTPUTs user answer 
+
+            		OUTPUT("Your answer was: \n" + userAnswerWrong[counter])
+
+            		// OUTPUTs correct answer 
+
+            		OUTPUT("The correct answer was: \n" + flashcardList.getValue(list(flashcardList)[wrongFlashcards[counter]]) + '\n') //getValue(key) gets the value of the key given
+
+            		// allows user to say IF they should have got this flashcard right OR wrong, as due to wording, grammar, etc
+
+			OUTPUT("did you get this right, y OR n \n>")
+
+            		INPUT(changeAnswer)
+
+            		CALL yOrN(changeAnswer)
+
+            		// IF user got flashcard right update score 
+
+            		IF changeAnswer IN YES THEN:
+
+                			newWrong <-- newWrong -1
+
+                			newCorrect <-- newCorrect + 1
+
+			END IF
+
+            		OUTPUT('\n')
+
+			counter <-- counter + 1
+
+		END WHILE
+
+
+
+        		// IF score is the same
+
+        		IF newWrong = wrong and newCorrect = correct THEN: 
+
+            		OUTPUT("\nYour score is still " + percentage + '% you got ' + correct + ' right, and ' + wrong + ' wrong')
+
+        		// IF score is different
+
+        		OTHERWISE:
+
+            		percentage <-- newCorrect / flashcardList.LENGTH * 100)
+
+            		OUTPUT("\nYour new score is " + percentage + '% you got ' + newCorrect + ' right, and ' + newWrong + ' wrong')
+
+		END IF
+
+		CASE:
+
+        			// grade rating
+
+        			percentage > 70:
+
+            			OUTPUT("EXCELENT \n")
+
+        			50 < percentage > 70:
+
+            			OUTPUT("Good job \n")
+
+        			OTHERWISE:
+
+            			OUTPUT("Better luck next time \n")
+
+		END CASE
+
+    	CALL StudyChoice(*flashcardInfo)
+
+END FUNCTION TEST
+
+
+
+DEFINE FUNCTION editFlashcards(userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList):
+
+    // flashcard information 
+
+    flashcardInfo <-- (userChosenSubject, userChosenFlashcardSet, termsTotalList, defsTotalList) 
+
+
+
+    counter <-- 0
+
+    WHILE counter < termsTotalList.LENGTH:
+
+        	// OUTPUTs terms and definiton
+
+        	OUTPUT('\nTerm: ' + termsTotalList[counter])
+
+       	OUTPUT('Definition: ' + defsTotalList[counter] + '\n')
+
+        	// IF user wants to edit flashcard REPEAT below 
+	
+	OUTPUT('Do you want to edit this flashcard, y OR n, OR you can go back \n>')
+
+       	INPUT(decisioN)
+
+        	IF decision IN goBack THEN:
+
+            	CALL StudyChoice(*flashcardInfo)
+
+	END IF
+
+        	// makes sure user INPUT a correct value 
+
+        	CALL yOrN(decision)
+
+        	IF decision IN YES THEN:
+
+            	newTerm <-- INPUT("\nWhat would you like the new term to be, \nenter nothing IF you do not want to change the term, \nor go back \n>")
+
+            	IF newTerm IN goBack THEN:
+
+                		CALL StudyChoice(*flashcardInfo)
+
+		END IF
+
+            	IF newTerm != '' THEN:
+
+                		// finds index location of editing term
+
+                		IndexTerm <-- termsTotalList.index(termsTotalList[counter])
+
+                		// replaces the term to the new term, using index as positioning
+
+                		termsTotalList <-- termsTotalList[:IndexTerm] + [newTerm] + termsTotalList[IndexTerm+1:]
+
+            	END IF
+
+		newDef <-- INPUT("\nWhat would you like the new definition to be, \nenter nothing IF you do not want to change the definition, \nor go back \n>")
+
+            	IF newDef IN goBack THEN:
+
+                		CALL StudyChoice(*flashcardInfo)
+
+		END IF
+
+            	IF newDef != '' THEN:
+
+                		// finds index location of editing definition
+
+                		IndexDefs <-- defsTotalList.index(defsTotalList[counter])
+
+                		// replaces the definition to the new definition, using index as positioning
+
+               		defsTotalList <-- defsTotalList[:IndexDefs] + [newDef] + defsTotalList[IndexDefs+1:]
+
+        		END IF
+
+	END IF
+
+	counter <-- counter + 1
+
+
+
+    	// OUTPUTs flashcards 
+
+    	counter <-- 0
+
+    	WHILE counter < termsTotalList.LENGTH:
+
+        		OUTPUT('term: ' + termsTotalList[counter] + '        ' + 'definition: ' + defsTotalList[counter] + '\n')
+
+        		counter <-- counter + 1
+
+	END WHILE
+
+	OUTPUT('Is list of terms and definitions to your satisfaction, y OR n')
+
+    	INPUT(satisfied)
+
+    	CALL yOrN(satisfied)
+
+
+
+    	// IF user is not satified with flashcards, starts function again
+
+    	IF satisfied IN NO THEN:
+
+        		CALL toStartOfFunction(editFlashcards,flashcardInfo)
+
+	END IF
+
+
+
+    	// edits flashcard term set
+
+    	with open(userChosenFlashcardSet + 'Term.txt','w') as newTermFile:
+
+        		FOR termWords IN termsTotalList:
+
+            		newTermFile.write(termWords + '\n')
+
+		END FOR
+
+        		newTermFile.close()
+
+
+
+    	// edits flashcard DEFINE FUNCTION set
+
+    	with open(userChosenFlashcardSet + 'Def.txt','w') as newDefFile:
+
+        		FOR defWords IN defsTotalList:
+
+           		newDefFile.write(defWords + '\n')
+
+		END FOR
+
+        		newDefFile.close()
+
+
+
+    	// goes back to study choices 
+
+    	OUTPUT('\nYour flashcards have been changed\n')
+
+
+
+    	// goes back to study options
+
+    	CALL StudyChoice(*flashcardInfo)
+
+END FUNCTION editFlashcards
+
+
+
+// starting function of program      
+
+CALL start()                                
